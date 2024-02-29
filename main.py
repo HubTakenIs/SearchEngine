@@ -22,37 +22,66 @@ mytest = jayson[2]
 # vocabulary
 vocabulary = {}
 
-
 punctuationList = string.punctuation
-body = mytest['body']
-jid = mytest['id']
-for punct in punctuationList:
-    #print(f"trying to replace {punct}")
-    body = body.replace(punct,"")
 
-splitBody = body.split(" ")
+def removePunctuation(text):
+    for punct in punctuationList:
+        #print(f"trying to replace {punct}")
+        text = text.replace(punct,"")
+    return text
 
-count = 0
-jokeIndex = {}
-for word in splitBody:
-    if word.lower() in stop_words:
-        #print("stopword found")
-        count +=1
-        continue
-    else:
-        stemmed = ps.stem(word)
-        if stemmed in jokeIndex.keys():
-            jokeIndex[stemmed].append(count)
+
+def textToIndex(text):
+    splitText = text.split(" ")
+    count = 0
+    jokeIndex = {}
+    for word in splitText:
+        if word.lower() in stop_words:
+            #print("stopword found")
+            count +=1
+            continue
         else:
-            jokeIndex[stemmed] = [count]
-    #print(f"I:{count}  original: {word}    stemmed: {ps.stem(word)}")
-    count += 1
+            stemmed = ps.stem(word)
+            if stemmed in jokeIndex.keys():
+                jokeIndex[stemmed].append(count)
+            else:
+                jokeIndex[stemmed] = [count]
+                #print(f"I:{count}  original: {word}    stemmed: {ps.stem(word)}")
+                count += 1
+    return jokeIndex
 
-print(f"jid: {jid}")
 
-for term in jokeIndex:
-    if term in vocabulary.keys():
-        vocabulary[term][jid] = jokeIndex[term]
-    else:
-        vocabulary[term] = {jid:jokeIndex[term]}
+def addIndexToVocabulary(index, jid):
+    for term in index:
+        if term in vocabulary.keys():
+            vocabulary[term][jid] = index[term]
+        else:
+            vocabulary[term] = {jid:index[term]}
+
+body = mytest['body']
+
+for i in range(0,10):
+    #retrieve joke
+    joke = jayson[i]
+    jid = joke['id']
+    # retrieve text from joke
+    title = joke['title']
+    body = joke['body']
+    # remove punctuation
+    title = removePunctuation(title)
+    body = removePunctuation(body)
+    
+    #create each index
+    title_index = textToIndex(title)
+    body_index = textToIndex(body)
+
+    #addIndexToVocabulary
+    addIndexToVocabulary(title_index,jid)
+    addIndexToVocabulary(body_index,jid)
+
+
+
+
+
+
 print(vocabulary)
