@@ -18,10 +18,14 @@ print(len(jayson)) # 194553 reddit jokes
 mytest = jayson[2]
 
 #print(type(mytest))
+
+# vocabulary
+vocabulary = {}
+
+
 punctuationList = string.punctuation
 body = mytest['body']
 jid = mytest['id']
-print(f"jid: {jid}")
 for punct in punctuationList:
     #print(f"trying to replace {punct}")
     body = body.replace(punct,"")
@@ -32,7 +36,7 @@ count = 0
 jokeIndex = {}
 for word in splitBody:
     if word.lower() in stop_words:
-        print("stopword found")
+        #print("stopword found")
         count +=1
         continue
     else:
@@ -44,4 +48,11 @@ for word in splitBody:
     #print(f"I:{count}  original: {word}    stemmed: {ps.stem(word)}")
     count += 1
 
-print(jokeIndex)
+print(f"jid: {jid}")
+
+for term in jokeIndex:
+    if term in vocabulary.keys():
+        vocabulary[term][jid] = jokeIndex[term]
+    else:
+        vocabulary[term] = {jid:jokeIndex[term]}
+print(vocabulary)
