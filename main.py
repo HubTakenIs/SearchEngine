@@ -1,8 +1,10 @@
 import string
 import json
 import nltk
+import re
 from nltk.stem import PorterStemmer
-nltk.download('stopwords')
+from nltk.tokenize import word_tokenize
+nltk.download("punkt")
 from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english'))
@@ -28,11 +30,18 @@ def removePunctuation(text):
     for punct in punctuationList:
         #print(f"trying to replace {punct}")
         text = text.replace(punct,"")
+    text = text.replace("\n"," ")
+    text = text.replace('“',' ')
+    text = text.replace('”',' ')
+    text = text.replace('’',' ')
+    text = text.replace('‘',' ')
+
+
     return text
 
 
 def textToIndex(text):
-    splitText = text.split(" ")
+    splitText = word_tokenize(text)
     count = 0
     jokeIndex = {}
     for word in splitText:
@@ -60,7 +69,7 @@ def addIndexToVocabulary(index, jid):
 
 body = mytest['body']
 
-for i in range(0,10):
+for i in range(0,10001):
     #retrieve joke
     joke = jayson[i]
     jid = joke['id']
@@ -80,8 +89,10 @@ for i in range(0,10):
     addIndexToVocabulary(body_index,jid)
 
 
+    if i % 10000 == 0:
+        print("10k processed")
 
-
-
-
-print(vocabulary)
+f = open("Main-Output.txt","w")
+f.write(str(vocabulary))
+f.close()
+#print(vocabulary)
