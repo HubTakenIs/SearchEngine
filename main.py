@@ -4,6 +4,8 @@ import nltk
 from nltk.stem import PorterStemmer
 nltk.download('stopwords')
 from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 stop_words = set(stopwords.words('english'))
 
@@ -60,7 +62,7 @@ def addIndexToVocabulary(index, jid):
 
 body = mytest['body']
 
-for i in range(0,10):
+for i in range(0,1000):
     #retrieve joke
     joke = jayson[i]
     jid = joke['id']
@@ -79,9 +81,10 @@ for i in range(0,10):
     addIndexToVocabulary(title_index,jid)
     addIndexToVocabulary(body_index,jid)
 
+# write a dictionary to a file
+f = open("output.json","w")
+f.write(str(vocabulary))
+f.close()
 
 
-
-
-
-print(vocabulary)
+#print(vocabulary)
