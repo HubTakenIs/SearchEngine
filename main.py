@@ -6,9 +6,63 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 nltk.download("punkt")
 from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.tokenize import word_tokenize
 
-stop_words = set(stopwords.words('english'))
 
+fp = open("reddit_jokes.json","r",1)
+jayson = json.load(fp)
+
+# init Sample documents
+documents = []
+
+for i in range(0,len(jayson)):
+    #retrieve joke
+    joke = jayson[i]
+    # retrieve text from joke
+    title = joke['title']
+    body = joke['body']
+    documents.append("Title: " +title + " Joke: " + body)
+    
+
+# Sample query
+query = "russian woman"
+
+# Step 1: Tokenize and preprocess the text
+nltk.download('punkt')
+from nltk.tokenize import word_tokenize
+tokenized_documents = [word_tokenize(doc.lower()) for doc in documents]
+tokenized_query = word_tokenize(query.lower())
+
+# Step 2: Calculate TF-IDF
+# Convert tokenized documents to text
+preprocessed_documents = [' '.join(doc) for doc in tokenized_documents]
+preprocessed_query = ' '.join(tokenized_query)
+
+# Create a TF-IDF vectorizer
+tfidf_vectorizer = TfidfVectorizer()
+tfidf_matrix = tfidf_vectorizer.fit_transform(preprocessed_documents)
+
+# Transform the query into a TF-IDF vector
+query_vector = tfidf_vectorizer.transform([preprocessed_query])
+
+# Step 3: Calculate cosine similarity
+cosine_similarities = cosine_similarity(query_vector, tfidf_matrix)
+
+# Step 4: Rank documents by similarity
+results = [(documents[i], cosine_similarities[0][i]) for i in range(len(documents))]
+results.sort(key=lambda x: x[1], reverse=True)
+
+# Step 5: Print the ranked documents
+results = results[:10]
+
+# Print the ranked documents
+for doc, similarity in results:
+    print(f"Similarity: {similarity:.2f}\n{doc}\n")
+
+'''
+nltk.download('punkt')
 ps = PorterStemmer()
 fp = open("reddit_jokes.json","r",1)
 
@@ -96,3 +150,5 @@ f = open("Main-Output.txt","w")
 f.write(str(vocabulary))
 f.close()
 #print(vocabulary)
+
+'''
