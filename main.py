@@ -1,5 +1,7 @@
 import string
+import os.path
 import json
+import pickle
 import nltk
 import re
 nltk.download('stopwords')
@@ -8,6 +10,20 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
+
+# class Query:
+
+#     def __init__(self, first, second, operator):
+#         self.first = first
+#         self.second = second
+#         self.operator = operator
+#         self.set = ()
+
+#     def intersect(self,documents):
+
+#         # updates set
+#     def changeFirst(self,first):
+#         self.first = first
 
 
 
@@ -42,52 +58,91 @@ def textToIndex(text,stop_words,stemmer):
     return jokeIndex
 
 
-def addIndexToVocabulary(index, jid,vocabulary):
+def addIndexToInvertedList(index, jid,InvertedList):
     for term in index:
-        if term in vocabulary.keys():
-            vocabulary[term][jid] = index[term]
+        if term in InvertedList.keys():
+            InvertedList[term][jid] = index[term]
         else:
-            vocabulary[term] = {jid:index[term]}
+            InvertedList[term] = {jid:index[term]}
 
+# def booleanRetrieval(InvertedList, query, original_documents):
+
+
+def processBooleanQuery(query):
+    # string in format of keyword AND keyword
+    sets = []
+    words = query.split()
+    currentSet = ()
+    for word in words:
+        return words
+
+def convertJsonToDict():
+    # function to change the format json format into a dict
+    # key = index, value = original json 
+    fp = open("source_repository/reddit_jokes.json","r",1)
+    loadedJson = json.load(fp)
+    fp.close()
+    documents = {}
+    for i in range(0,len(loadedJson)):
+        documents[i] = loadedJson[i]
+    fileobj = open("documents.bin",'wb')
+    pickle.dump(documents,fileobj)
+    fileobj.close()
+
+def loadDocuments():
+    fileobj = open("documents.bin",'rb')
+    documents = pickle.load(fileobj) 
+    fileobj.close()
+    return documents
+
+
+
+def storeInvertedLists(InvertedLists):
+    fileobj = open("InvertedLists.bin", 'wb')
+    pickle.dump(InvertedLists,fileobj)
+    fileobj.close()
+
+def loadInvertedLists():
+    fileobj = open("InvertedLists.bin", 'rb')
+    InvertedLists = pickle.load(fileobj)
+    fileobj.close()
+    return InvertedLists
 
 def main():
+    documents = loadDocuments()
     stop_words = set(stopwords.words('english'))
     punctuationList = string.punctuation
     ps = PorterStemmer()
-    fp = open("reddit_jokes.json","r",1)
-    jayson = json.load(fp)
-    print(len(jayson)) # 194553 reddit jokes
-    #print(jayson[2]) # first not racist joke
-    mytest = jayson[2]
-    #print(type(mytest))
-    # vocabulary
-    vocabulary = {}
-    body = mytest['body']
-    for i in range(0,11):
-        #retrieve joke
-        joke = jayson[i]
-        jid = joke['id']
-        #retrieve text from joke
-        title = joke['title']
-        body = joke['body']
-        # remove punctuation
-        title = removePunctuation(title,punctuationList)
-        body = removePunctuation(body,punctuationList)
-        joke_text = title + " " + body
-        joke_index = textToIndex(joke_text,stop_words,ps)
-        # normalised Term Frequency
-        # tf = term occurance / most occuring term
-        # tf per document?
-        # joke index
-        addIndexToVocabulary(joke_index,jid,vocabulary)
-    #print("JOKE INDEX ")
-    #print(joke_index)
-    if i % 10000 == 0:
-        print("10k processed")
-    f = open("Main-Output.txt","w")
-    f.write(str(vocabulary))
-    f.close()
-    fp.close()
+    
+    # load cached InvertedLists, if it's None then we should remake it.
+    InvertedList = {}
+    if os.path.isfile("InvertedLists.bin"):
+        print("cached file exists")
+        InvertedList = loadInvertedLists()
+
+        # put all of this stuff in a custom function to create file if missing. 
+
+        
+
+    # for i in range(0,len(documents)):
+    #     #retrieve joke
+    #     joke = documents[i]
+    #     jid = i
+    #     #retrieve text from joke
+    #     title = joke['title']
+    #     body = joke['body']
+    #     # remove punctuation
+    #     title = removePunctuation(title,punctuationList)
+    #     body = removePunctuation(body,punctuationList)
+    #     joke_text = title + " " + body
+    #     joke_index = textToIndex(joke_text,stop_words,ps)
+    #     addIndexToInvertedList(joke_index,jid,InvertedList)
+    
+    # storeInvertedLists(InvertedList)
+    
+    # f = open("Main-Output.txt","w")
+    # f.write(str(InvertedList))
+    # f.close()
 
 
 if __name__ == "__main__":
