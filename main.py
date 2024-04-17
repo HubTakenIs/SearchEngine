@@ -2,9 +2,10 @@ import string
 import json
 import nltk
 import re
+nltk.download('stopwords')
+nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
-nltk.download("punkt")
 from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english'))
@@ -69,6 +70,7 @@ def addIndexToVocabulary(index, jid):
 
 body = mytest['body']
 
+<<<<<<< HEAD
 for i in range(0,10):
     # set as key of dict
     maindict = {}
@@ -76,6 +78,12 @@ for i in range(0,10):
     maindict[("not", 2)] = ({"json":"object"},2)
     print(maindict)
     
+=======
+
+
+
+for i in range(0,11):
+>>>>>>> 6c116d73c17c3f4117c0257d450b859d01b32e90
     #retrieve joke
     joke = jayson[i]
     jid = joke['id']
@@ -85,6 +93,7 @@ for i in range(0,10):
     # remove punctuation
     title = removePunctuation(title)
     body = removePunctuation(body)
+<<<<<<< HEAD
 
     joke_text = title + " " + body
 
@@ -102,6 +111,15 @@ for i in range(0,10):
     
     #print("JOKE INDEX ")
     #print(joke_index)
+=======
+    joke1 = title + " " + body
+    
+    #create each index
+    joke_index = textToIndex(joke1)
+    #addIndexToVocabulary
+    addIndexToVocabulary(joke_index,jid)
+    
+>>>>>>> 6c116d73c17c3f4117c0257d450b859d01b32e90
     
 
 
