@@ -69,7 +69,13 @@ def addIndexToVocabulary(index, jid):
 
 body = mytest['body']
 
-for i in range(0,10001):
+for i in range(0,10):
+    # set as key of dict
+    maindict = {}
+    maindict[("term", 1)] = ({"json":"object"},2)
+    maindict[("not", 2)] = ({"json":"object"},2)
+    print(maindict)
+    
     #retrieve joke
     joke = jayson[i]
     jid = joke['id']
@@ -79,14 +85,24 @@ for i in range(0,10001):
     # remove punctuation
     title = removePunctuation(title)
     body = removePunctuation(body)
-    
-    #create each index
-    title_index = textToIndex(title)
-    body_index = textToIndex(body)
 
-    #addIndexToVocabulary
-    addIndexToVocabulary(title_index,jid)
-    addIndexToVocabulary(body_index,jid)
+    joke_text = title + " " + body
+
+    
+
+    joke_index = textToIndex(joke_text)
+
+    # normalised Term Frequency
+    # tf = term occurance / most occuring term
+    # tf per document?
+    
+    # joke index
+
+    addIndexToVocabulary(joke_index,jid)
+    
+    #print("JOKE INDEX ")
+    #print(joke_index)
+    
 
 
     if i % 10000 == 0:
