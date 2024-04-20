@@ -154,6 +154,20 @@ def createInvertedList(documents,stop_words,punctuationList,ps,InvertedList):
         joke_index = textToIndex(joke_text,stop_words,ps)
         addIndexToInvertedList(joke_index,jid,InvertedList)
 
+def createVectorSpace(InvertedList):
+    vectorSpace = {}
+    for key in InvertedList.keys():
+        idf = InvertedList[key][1]
+        postings = InvertedList[key][0]
+        for pkey in postings.keys():
+            #print(postings[pkey][1])
+            if pkey in vectorSpace.keys():
+                vectorSpace[pkey][key] = postings[pkey][1] * idf
+            else:
+                joke = {key:postings[pkey][1] * idf}
+                vectorSpace[pkey] = joke 
+    return vectorSpace
+
 def main():
     if os.path.isfile("documents.bin"):
         documents = loadDocuments()
@@ -178,9 +192,9 @@ def main():
     # what up 
     InvertedList = CalculateTF(InvertedList)
     InvertedList = CalculateIDF(InvertedList)
-    documentVectorSpace = {}
-    
-    print(InvertedList)
+    documentVectorSpace = createVectorSpace(InvertedList)
+    print(documentVectorSpace)
+    #print(InvertedList)
     #print(InvertedList)
 
 if __name__ == "__main__":
