@@ -11,22 +11,6 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
 
-# class Query:
-
-#     def __init__(self, first, second, operator):
-#         self.first = first
-#         self.second = second
-#         self.operator = operator
-#         self.set = ()
-
-#     def intersect(self,documents):
-
-#         # updates set
-#     def changeFirst(self,first):
-#         self.first = first
-
-
-
 def removePunctuation(text,punctuationList):
     for punct in punctuationList:
         text = text.replace(punct,"")
@@ -64,9 +48,6 @@ def addIndexToInvertedList(index, jid,InvertedList):
             InvertedList[term][jid] = index[term]
         else:
             InvertedList[term] = {jid:index[term]}
-
-# def booleanRetrieval(InvertedList, query, original_documents):
-
 
 def processBooleanQuery(query):
     # string in format of keyword AND keyword
