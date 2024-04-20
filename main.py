@@ -3,7 +3,7 @@ import os.path
 import json
 import pickle
 import nltk
-import re
+import math
 nltk.download('stopwords')
 nltk.download('punkt')
 from nltk.stem import PorterStemmer
@@ -108,42 +108,80 @@ def loadInvertedLists():
     fileobj.close()
     return InvertedLists
 
+def CalculateTF(InvertedList):
+    #Inverted List when it's first created
+    mostFrequent = float("-inf")
+    for key in InvertedList.keys():
+        posting = InvertedList[key]
+        if len(posting) > mostFrequent:
+            mostFrequent = len(posting)
+    
+
+    for key in InvertedList.keys():
+        posting = InvertedList[key]
+        for pkey in posting.keys():
+            tfVal = len(posting[pkey]) / mostFrequent
+            posting[pkey] = (posting[pkey],tfVal)
+        #tf[key] = InvertedList[key]
+    #print(InvertedList)
+    return InvertedList
+
+def CalculateIDF(InvertedList):
+    # InvertedList with TF values updated. 
+    jokeCount = len(InvertedList.keys())
+    for key in InvertedList.keys():
+        #print(key)
+        postings = InvertedList[key]
+        jokesContainingTerm = len(postings.keys())
+        idfVal = math.log(jokeCount / jokesContainingTerm)
+        #print(idfVal)
+        InvertedList[key] = (InvertedList[key],idfVal)
+    #print(idf)
+    return InvertedList
+
+def createInvertedList(documents,stop_words,punctuationList,ps,InvertedList):
+    for i in range(0,12):
+        #retrieve joke
+        joke = documents[i]
+        jid = i
+        #retrieve text from joke
+        title = joke['title']
+        body = joke['body']
+        # remove punctuation
+        title = removePunctuation(title,punctuationList)
+        body = removePunctuation(body,punctuationList)
+        joke_text = title + " " + body
+        joke_index = textToIndex(joke_text,stop_words,ps)
+        addIndexToInvertedList(joke_index,jid,InvertedList)
+
 def main():
-    documents = loadDocuments()
+    if os.path.isfile("documents.bin"):
+        documents = loadDocuments()
+    else:
+        convertJsonToDict()
+        documents = loadDocuments()
+    
     stop_words = set(stopwords.words('english'))
     punctuationList = string.punctuation
     ps = PorterStemmer()
     
     # load cached InvertedLists, if it's None then we should remake it.
     InvertedList = {}
+
     if os.path.isfile("InvertedLists.bin"):
         print("cached file exists")
         InvertedList = loadInvertedLists()
-
-        # put all of this stuff in a custom function to create file if missing. 
-
-        
-
-    # for i in range(0,len(documents)):
-    #     #retrieve joke
-    #     joke = documents[i]
-    #     jid = i
-    #     #retrieve text from joke
-    #     title = joke['title']
-    #     body = joke['body']
-    #     # remove punctuation
-    #     title = removePunctuation(title,punctuationList)
-    #     body = removePunctuation(body,punctuationList)
-    #     joke_text = title + " " + body
-    #     joke_index = textToIndex(joke_text,stop_words,ps)
-    #     addIndexToInvertedList(joke_index,jid,InvertedList)
+    else:
+        print("cached file not found. creating from scratch, wait a while.")
+        createInvertedList(documents,stop_words,punctuationList,ps,InvertedList)
+        storeInvertedLists(InvertedList)
+    # what up 
+    InvertedList = CalculateTF(InvertedList)
+    InvertedList = CalculateIDF(InvertedList)
+    documentVectorSpace = {}
     
-    # storeInvertedLists(InvertedList)
-    
-    # f = open("Main-Output.txt","w")
-    # f.write(str(InvertedList))
-    # f.close()
-
+    print(InvertedList)
+    #print(InvertedList)
 
 if __name__ == "__main__":
     main()
