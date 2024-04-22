@@ -9,8 +9,10 @@ nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+import numpy as np
+import copy
 
-
+## function to remove punctuation from text
 def removePunctuation(text,punctuationList):
     for punct in punctuationList:
         text = text.replace(punct,"")
@@ -68,17 +70,17 @@ def convertJsonToDict():
     pickle.dump(documents,fileobj)
     fileobj.close()
 
-def loadDocuments():
-    fileobj = open("documents.bin",'rb')
+def loadDocuments(documentName):
+    fileobj = open(documentName,'rb')
     documents = pickle.load(fileobj) 
     fileobj.close()
     return documents
 
 
 
-def storeInvertedLists(InvertedLists):
-    fileobj = open("InvertedLists.bin", 'wb')
-    pickle.dump(InvertedLists,fileobj)
+def storeObjectAsBinary(Object,fileName):
+    fileobj = open(fileName, 'wb')
+    pickle.dump(Object,fileobj)
     fileobj.close()
 
 def loadInvertedLists():
@@ -115,7 +117,7 @@ def CalculateIDF(InvertedList):
     return InvertedList
 
 def createInvertedList(documents,stop_words,punctuationList,ps,InvertedList):
-    for i in range(0,12):
+    for i in range(0, len(documents)):
         #retrieve joke
         joke = documents[i]
         jid = i
@@ -125,8 +127,11 @@ def createInvertedList(documents,stop_words,punctuationList,ps,InvertedList):
         # remove punctuation
         title = removePunctuation(title,punctuationList)
         body = removePunctuation(body,punctuationList)
+        # store joke as string
         joke_text = title + " " + body
+        # create index for joke
         joke_index = textToIndex(joke_text,stop_words,ps)
+        # add index to inverted list
         addIndexToInvertedList(joke_index,jid,InvertedList)
 
 def createVectorSpace(InvertedList):
@@ -153,40 +158,94 @@ def QueryToDocVector(input):
     invertedIndex = {}
     addIndexToInvertedList(inputIndex,-1,invertedIndex)
     invertedIndex = CalculateTF(invertedIndex)
-    print(invertedIndex)
+    for key in invertedIndex.keys():
+        vector[key] = invertedIndex[key][-1][1]
+    ##print(invertedIndex)
     return vector
 
+def cosineSimilarity(queryVector,documentVector):
+    tempQueryVector = queryVector.copy()    
+    tempDocumentVector = documentVector.copy()
 
+    queryVectorKeys = tempQueryVector.keys()
+    documentVectorKeys = tempDocumentVector.keys()
+    for key in queryVectorKeys:
+        if key not in documentVectorKeys:
+            tempDocumentVector[key] = 0
+    for key in documentVectorKeys:
+        if key not in queryVectorKeys:
+            tempQueryVector[key] = 0
+    
+    dotProduct = np.dot(list(tempQueryVector.values()),list(tempDocumentVector.values()))
+    x = list(tempQueryVector.values())
+    for i in range(0,len(x)):
+        x[i] = x[i]**2
+    y = list(tempDocumentVector.values())
+    for i in range(0,len(y)):
+        y[i] = y[i]**2
+     # Compute the L2 norms (magnitudes) of x and y
+    magnitude_x = np.sqrt(np.sum(x)) 
+    magnitude_y = np.sqrt(np.sum(y))
+    # Compute the cosine similarity
+    cosine_similarity = dotProduct / (magnitude_x * magnitude_y)
+    return cosine_similarity
 
 def main():
+    ## If the documents.bin file exists, load it. Otherwise, convert the json and load it.
     if os.path.isfile("documents.bin"):
-        documents = loadDocuments()
+        documents = loadDocuments("documents.bin")
     else:
         convertJsonToDict()
-        documents = loadDocuments()
+        documents = loadDocuments("documents.bin")
     
+    # define the stop words, punctuation, and stemmer
     stop_words = set(stopwords.words('english'))
     punctuationList = string.punctuation
     ps = PorterStemmer()
     
     # load cached InvertedLists, if it's None then we should remake it.
     InvertedList = {}
-
+    #
     if os.path.isfile("InvertedLists.bin"):
         print("cached file exists")
         InvertedList = loadInvertedLists()
     else:
         print("cached file not found. creating from scratch, wait a while.")
         createInvertedList(documents,stop_words,punctuationList,ps,InvertedList)
-        storeInvertedLists(InvertedList)
-    # what up 
+        storeObjectAsBinary(InvertedList, "InvertedLists.bin")
+    
+    # calculate TF and IDF
     InvertedList = CalculateTF(InvertedList)
     InvertedList = CalculateIDF(InvertedList)
-    documentVectorSpace = createVectorSpace(InvertedList)
+    # if documentVectorSpace exists, load it. Otherwise, create it.
+    if os.path.isfile("documentVectorSpace.bin"):
+        documentVectorSpace = loadDocuments("documentVectorSpace.bin")
+    else:
+        documentVectorSpace = createVectorSpace(InvertedList)
+        storeObjectAsBinary(documentVectorSpace, "documentVectorSpace.bin")
+
+
     #print(documentVectorSpace)
-    test = QueryToDocVector("Pizza in germany")
-    print(test)
+    vectorQuery = QueryToDocVector("Pizza in germany")
+    rsv = {}
+
+    for key in documentVectorSpace.keys():
+        similarity = cosineSimilarity(vectorQuery,documentVectorSpace[key])
+        rsv[similarity] = key 
+    
+    myKeys = list(rsv.keys())
+    myKeys.sort(reverse=False)
+    firstFive = myKeys[:11]
+    sorted_dict = {i: rsv[i] for i in firstFive}
+
+
+    for key in sorted_dict.keys():
+        print("Joke ID: ", sorted_dict[key])
+        print("Cosine Similarity: ", key)
+        print("Title: ", documents[sorted_dict[key]])
+
 
 
 if __name__ == "__main__":
     main()
+
