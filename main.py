@@ -28,7 +28,6 @@ def textToIndex(text,stop_words,stemmer):
     jokeIndex = {}
     for word in splitText:
         if word.lower() in stop_words:
-            #print("stopword found")
             count +=1
             continue
         else:
@@ -37,7 +36,6 @@ def textToIndex(text,stop_words,stemmer):
                 jokeIndex[stemmed].append(count)
             else:
                 jokeIndex[stemmed] = [count]
-                #print(f"I:{count}  original: {word}    stemmed: {ps.stem(word)}")
                 count += 1
     return jokeIndex
 
@@ -103,8 +101,6 @@ def CalculateTF(InvertedList):
         for pkey in posting.keys():
             tfVal = len(posting[pkey]) / mostFrequent
             posting[pkey] = (posting[pkey],tfVal)
-        #tf[key] = InvertedList[key]
-    #print(InvertedList)
     return InvertedList
 
 def CalculateIDF(InvertedList):
@@ -115,9 +111,7 @@ def CalculateIDF(InvertedList):
         postings = InvertedList[key]
         jokesContainingTerm = len(postings.keys())
         idfVal = math.log(jokeCount / jokesContainingTerm)
-        #print(idfVal)
         InvertedList[key] = (InvertedList[key],idfVal)
-    #print(idf)
     return InvertedList
 
 def createInvertedList(documents,stop_words,punctuationList,ps,InvertedList):
@@ -141,13 +135,28 @@ def createVectorSpace(InvertedList):
         idf = InvertedList[key][1]
         postings = InvertedList[key][0]
         for pkey in postings.keys():
-            #print(postings[pkey][1])
             if pkey in vectorSpace.keys():
                 vectorSpace[pkey][key] = postings[pkey][1] * idf
             else:
                 joke = {key:postings[pkey][1] * idf}
                 vectorSpace[pkey] = joke 
     return vectorSpace
+
+
+def QueryToDocVector(input):
+    vector = {}
+    punctuationList = string.punctuation
+    stop_words = set(stopwords.words('english'))
+    ps = PorterStemmer()
+    input = removePunctuation(input,punctuationList)
+    inputIndex = textToIndex(input,stop_words,ps)
+    invertedIndex = {}
+    addIndexToInvertedList(inputIndex,-1,invertedIndex)
+    invertedIndex = CalculateTF(invertedIndex)
+    print(invertedIndex)
+    return vector
+
+
 
 def main():
     if os.path.isfile("documents.bin"):
@@ -174,9 +183,10 @@ def main():
     InvertedList = CalculateTF(InvertedList)
     InvertedList = CalculateIDF(InvertedList)
     documentVectorSpace = createVectorSpace(InvertedList)
-    print(documentVectorSpace)
-    #print(InvertedList)
-    #print(InvertedList)
+    #print(documentVectorSpace)
+    test = QueryToDocVector("Pizza in germany")
+    print(test)
+
 
 if __name__ == "__main__":
     main()
