@@ -101,7 +101,8 @@ def CalculateTF(InvertedList):
     for key in InvertedList.keys():
         posting = InvertedList[key]
         for pkey in posting.keys():
-            tfVal = len(posting[pkey]) / mostFrequent
+            tfVal = len(posting[pkey])
+            #tfVal = len(posting[pkey]) / mostFrequent
             posting[pkey] = (posting[pkey],tfVal)
     return InvertedList
 
@@ -163,32 +164,14 @@ def QueryToDocVector(input):
     ##print(invertedIndex)
     return vector
 
-def cosineSimilarity(queryVector,documentVector):
-    tempQueryVector = queryVector.copy()    
-    tempDocumentVector = documentVector.copy()
-
-    queryVectorKeys = tempQueryVector.keys()
-    documentVectorKeys = tempDocumentVector.keys()
-    for key in queryVectorKeys:
-        if key not in documentVectorKeys:
-            tempDocumentVector[key] = 0
-    for key in documentVectorKeys:
-        if key not in queryVectorKeys:
-            tempQueryVector[key] = 0
-    
-    dotProduct = np.dot(list(tempQueryVector.values()),list(tempDocumentVector.values()))
-    x = list(tempQueryVector.values())
-    for i in range(0,len(x)):
-        x[i] = x[i]**2
-    y = list(tempDocumentVector.values())
-    for i in range(0,len(y)):
-        y[i] = y[i]**2
-     # Compute the L2 norms (magnitudes) of x and y
-    magnitude_x = np.sqrt(np.sum(x)) 
-    magnitude_y = np.sqrt(np.sum(y))
-    # Compute the cosine similarity
-    cosine_similarity = dotProduct / (magnitude_x * magnitude_y)
-    return cosine_similarity
+def RSV(queryVector,documentVector):    
+    RSV = 0
+    for qterm in queryVector.keys():
+        if qterm in documentVector.keys():
+            RSV += queryVector[qterm] * documentVector[qterm]
+        else:
+            RSV += queryVector[qterm] * 0
+    return RSV
 
 def main():
     ## If the documents.bin file exists, load it. Otherwise, convert the json and load it.
@@ -227,23 +210,24 @@ def main():
 
     #print(documentVectorSpace)
     vectorQuery = QueryToDocVector("Pizza in germany")
-    rsv = {}
-
-    for key in documentVectorSpace.keys():
-        similarity = cosineSimilarity(vectorQuery,documentVectorSpace[key])
-        rsv[similarity] = key 
+    output = []
+    for key in list(documentVectorSpace.keys()):
+        similarity = RSV(vectorQuery,documentVectorSpace[key])
+        # print(key)
+        # print(similarity)
+        output.append((key,similarity,documents[key]))
     
-    myKeys = list(rsv.keys())
-    myKeys.sort(reverse=False)
-    firstFive = myKeys[:11]
-    sorted_dict = {i: rsv[i] for i in firstFive}
-
-
-    for key in sorted_dict.keys():
-        print("Joke ID: ", sorted_dict[key])
-        print("Cosine Similarity: ", key)
-        print("Title: ", documents[sorted_dict[key]])
-
+    output.sort(key=lambda tup: tup[1],reverse=True)
+    
+    for item in output[0:10]:
+        print("-----------")
+        print(f"key {item[0]}")
+        print(f"RSV {item[1]}")
+        print(f"Joke {item[2]}")
+        print("-----------")
+        
+        
+    
 
 
 if __name__ == "__main__":
