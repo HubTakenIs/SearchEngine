@@ -9,8 +9,6 @@ nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-import numpy as np
-import copy
 
 ## function to remove punctuation from text
 def removePunctuation(text,punctuationList):
@@ -173,6 +171,15 @@ def RSV(queryVector,documentVector):
             RSV += queryVector[qterm] * 0
     return RSV
 
+def executeQuery(query,documentVectors,documents):
+    output = []
+    for key in list(documentVectors.keys()):
+        similarity = RSV(query,documentVectors[key])
+        output.append((key,similarity,documents[key]))
+    
+    output.sort(key=lambda tup: tup[1],reverse=True)
+    return output
+
 def main():
     ## If the documents.bin file exists, load it. Otherwise, convert the json and load it.
     if os.path.isfile("documents.bin"):
@@ -188,7 +195,6 @@ def main():
     
     # load cached InvertedLists, if it's None then we should remake it.
     InvertedList = {}
-    #
     if os.path.isfile("InvertedLists.bin"):
         print("cached file exists")
         InvertedList = loadInvertedLists()
@@ -207,17 +213,8 @@ def main():
         documentVectorSpace = createVectorSpace(InvertedList)
         storeObjectAsBinary(documentVectorSpace, "documentVectorSpace.bin")
 
-
-    #print(documentVectorSpace)
     vectorQuery = QueryToDocVector("Pizza in germany")
-    output = []
-    for key in list(documentVectorSpace.keys()):
-        similarity = RSV(vectorQuery,documentVectorSpace[key])
-        # print(key)
-        # print(similarity)
-        output.append((key,similarity,documents[key]))
-    
-    output.sort(key=lambda tup: tup[1],reverse=True)
+    output = executeQuery(vectorQuery,documentVectorSpace,documents)
     
     for item in output[0:10]:
         print("-----------")

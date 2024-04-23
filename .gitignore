@@ -1,5 +1,4 @@
-reformat.py
-Main-Output.txt
-documents.bin
-Main-Output.txt
-InvertedLists.bin
+api-backend/documents.bin
+api-backend/InvertedLists.bin
+api-backend/documentVectorSpace.bin
+api-backend/__pycache__/
