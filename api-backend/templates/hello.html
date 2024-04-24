@@ -2,6 +2,10 @@
 <html lang="en">
  
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -12,9 +16,13 @@
  
 <body>
     <div class="container">
-        <div>
+        
+        <div class="search-bar">
+            <h1>Jokes Search Engine</h1>
             <input name="query" type="text"/>
+            <i class="fa-solid fa-magnifying-glass">
             <button id ="submit" hx-get="/joke-search" hx-target="#search-results" hx-include="[name='query']">Search</button>
+           </i>
             <div id ="search-results"></div>
         </div>
 

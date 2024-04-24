@@ -15,6 +15,7 @@ documents = loadDocuments("documents.bin")
 def hello_():
     return render_template("hello.html")
 
+
 @app.route("/joke-search")
 def joke_search(query=None):
     query = request.args.get('query')
@@ -23,8 +24,8 @@ def joke_search(query=None):
     #top5 = []
     response = ""
     for i in range(5):
-        response += f"<h2>{output[i][2]['title']}</h2>"
-        response += f"<div class='panel'> <p>{output[i][2]['body']}</p> </div>"
+        response += f"<div class='panel'><h2>{output[i][2]['title']}</h2>"
+        response += f"<div ><p>{output[i][2]['body']}</p> </div></div>"
 
     return response
     #return json.dumps(top5)
