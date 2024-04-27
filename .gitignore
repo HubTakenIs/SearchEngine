@@ -2,3 +2,4 @@ api-backend/documents.bin
 api-backend/InvertedLists.bin
 api-backend/documentVectorSpace.bin
 api-backend/__pycache__/
+.venv
