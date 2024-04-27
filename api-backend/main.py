@@ -58,7 +58,7 @@ def processBooleanQuery(query):
 def convertJsonToDict():
     # function to change the format json format into a dict
     # key = index, value = original json 
-    fp = open("source_repository/reddit_jokes.json","r",1)
+    fp = open("source_repository/cleanedJokes.json","r",1)
     loadedJson = json.load(fp)
     fp.close()
     documents = {}
