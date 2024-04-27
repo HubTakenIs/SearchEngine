@@ -3,6 +3,8 @@ import json
 with open ("bad-words.txt", "r") as myFile:
     badwords = myFile.read().splitlines()
 
+badwords = badwords[1:]
+print(badwords)
 
 def convertJsonToDict():
     fp = open("reddit_jokes.json","r",1)
@@ -21,14 +23,11 @@ for doc in documents:
     currentDoc = documents[doc]
     title = currentDoc["title"]
     body = currentDoc["body"]
-    titleList = title.split()
-    bodyList = body.split()
-    for word in titleList:
-        if word in badwords:
-            isClean = False
-            break
-    for word in bodyList:
-        if word in badwords:
+    currentJoke = title + " " + body
+    currentJoke = currentJoke.lower()
+    for i in range(0,len(badwords)):
+        badWord = badwords[i]
+        if(badWord in currentJoke):
             isClean = False
             break
     if isClean:
